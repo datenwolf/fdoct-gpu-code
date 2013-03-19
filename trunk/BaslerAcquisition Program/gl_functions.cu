@@ -869,12 +869,11 @@ void displaylinePlot() {
 
 //Lineplot to be displayed
 void updatelinePlot(){
-	int lineScaleFactor = (width);
+	int lineScaleFactor = 2048; //This should be half the bit depth
 
 	for(int i = 0; i < width; i++) {	  
 		float x = (i-(float)width/2)/(float)(width/2);
 		graph[i].x = x;
-		//graph[i].y = (float)buffer1[2048*50 + i]/width-1;
 		if (volumeRender || fundusRender) {
 			graph[i].y = (float)(buffer1[frameCount*width*height + width*height/2 + i])/lineScaleFactor - 1;
 		} else {

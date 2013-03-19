@@ -221,20 +221,20 @@ void InitializeThreads(void)
 // initialize the scan offset and scan size from values saved on file
 	_tcscpy(sectionName, _T("Scanning"));		
 	
-	ScanThrPtr->XScanOffset = Convert::ToInt32(XScanOffset_mVNumeric->Text);
-	_itoa_s(ScanThrPtr->XScanOffset,stringName,strbuffsize,10);			
+	ScanThrPtr->XScanOffset_mV = Convert::ToDouble(XScanOffset_mVNumeric->Text);
+	_itoa_s(ScanThrPtr->XScanOffset_mV,stringName,strbuffsize,10);			
 	WritePrivateProfileString(sectionName,_T("XOffset"),stringName,iniFile);
 
-	ScanThrPtr->XScanVolts = Convert::ToInt32(XScanAmp_mVNumeric->Text);
-	_itoa_s(ScanThrPtr->XScanVolts,stringName,strbuffsize,10);			
+	ScanThrPtr->XScanVolts_mV = Convert::ToDouble(XScanAmp_mVNumeric->Text);
+	_itoa_s(ScanThrPtr->XScanVolts_mV,stringName,strbuffsize,10);			
 	WritePrivateProfileString(sectionName,_T("XScanRange"),stringName,iniFile);
 
-	ScanThrPtr->YScanOffset = Convert::ToInt32(YscanOffset_mVNumeric->Text);
-	_itoa_s(ScanThrPtr->YScanOffset,stringName,strbuffsize,10);			
+	ScanThrPtr->YScanOffset_mV = Convert::ToDouble(YscanOffset_mVNumeric->Text);
+	_itoa_s(ScanThrPtr->YScanOffset_mV,stringName,strbuffsize,10);			
 	WritePrivateProfileString(sectionName,_T("YOffset"),stringName,iniFile);
 	
-	ScanThrPtr->YScanVolts = Convert::ToInt32(YscanAmp_mVNumeric->Text);
-	_itoa_s(ScanThrPtr->YScanVolts,stringName,strbuffsize,10);			
+	ScanThrPtr->YScanVolts_mV = Convert::ToDouble(YscanAmp_mVNumeric->Text);
+	_itoa_s(ScanThrPtr->YScanVolts_mV,stringName,strbuffsize,10);			
 	WritePrivateProfileString(sectionName,_T("YScanRange"),stringName,iniFile);
 
 	ScanThrPtr->NumPtsDw = Convert::ToInt32(FlyBackPoints->Text);
@@ -419,10 +419,10 @@ System::Void ScanValChanged (System::Object*  sender, System::EventArgs*  e)
 		ScanThrPtr->NumPtsDw = Convert::ToInt32(FlyBackPoints->Text);
 		globalOptions->bVolumeScan = YscanOffChckBx->Checked;
 		ScanThrPtr->FrameRate = Convert::ToInt32(LineRateNumeric->Value);
-		ScanThrPtr->XScanVolts = Convert::ToInt32(XScanAmp_mVNumeric->Value);
-		ScanThrPtr->XScanOffset = Convert::ToInt32(XScanOffset_mVNumeric->Value);
-		ScanThrPtr->YScanVolts = Convert::ToInt32(YscanAmp_mVNumeric->Value);
-		ScanThrPtr->YScanOffset = Convert::ToInt32(YscanOffset_mVNumeric->Value);
+		ScanThrPtr->XScanVolts_mV = Convert::ToDouble(XScanAmp_mVNumeric->Value);
+		ScanThrPtr->XScanOffset_mV = Convert::ToDouble(XScanOffset_mVNumeric->Value);
+		ScanThrPtr->YScanVolts_mV = Convert::ToDouble(YscanAmp_mVNumeric->Value);
+		ScanThrPtr->YScanOffset_mV = Convert::ToDouble(YscanOffset_mVNumeric->Value);
 		globalOptions->NumFramesPerVol = Convert::ToInt32(YFrameNumNumeric->Value);
 		
 		if (BASLER) {
