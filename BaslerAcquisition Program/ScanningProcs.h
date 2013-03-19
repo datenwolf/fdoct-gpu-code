@@ -61,10 +61,9 @@ public:
 //public functions
 	void InitializeSyncAndScan(void);
 	void StopTasks(void);
-	int GenSawToothY(int numElements, double amplitude, double sawTooth[]);
-	int GenSawTooth(int numElements, double amplitude, double sawTooth[]);
-	int GenStairCase(int numElementsPerStep, int numSteps,double amplitude, double stairCase[]);
-	int GenPulseTrain(int numElements,uInt8 digWave[]);
+	void GenSawTooth(int numElements, double amplitude,  double offset, double sawTooth[]);
+	void GenStairCase(int numElementsPerStep, int numSteps, double amplitude, double offset,double stairCase[]);
+	void GenPulseTrain(int numElements,uInt8 digWave[]);
 	void GetTerminalNameWithDevPrefix(TaskHandle taskHandle, const char terminalName[], char triggerName[]);
 
 //public variables
@@ -74,10 +73,10 @@ public:
 	TaskHandle	taskTrig;
 	TaskHandle  taskTrA;
    	   
-	int XScanVolts;
-	int XScanOffset;
-	int YScanVolts;
-	int YScanOffset;
+	double XScanVolts_mV;
+	double XScanOffset_mV;
+	double YScanVolts_mV;
+	double YScanOffset_mV;
 	int FrameRate;
 	int Samps;
 	int NumPtsDw;

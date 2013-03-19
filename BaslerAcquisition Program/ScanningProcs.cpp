@@ -97,13 +97,13 @@ void ScanThreadLinear::InitializeSyncAndScan(void)
 
 	if (globalOptions->bVolumeScan == false)
 	{
-		GenSawTooth(Samps,XScanVolts/1000,ScanBuff);
+		GenSawTooth(Samps,XScanVolts_mV,XScanOffset_mV,ScanBuff);
 
 		for (int i = 0; i< Samps; i++)
 			VolBuff[i] = ScanBuff[i];
 
 		for (int i = Samps; i < 2*Samps; i++)
-			VolBuff[i] = YScanOffset/1000;
+			VolBuff[i] = YScanOffset_mV/1000;
 
 		DAQmxWriteAnalogF64(taskAnalog, Samps, false ,10 ,DAQmx_Val_GroupByChannel, VolBuff,NULL,NULL);
 
@@ -116,7 +116,7 @@ void ScanThreadLinear::InitializeSyncAndScan(void)
 		
 		int frameCount;
 
-		GenSawTooth(Samps,XScanVolts/1000,ScanBuff);
+		GenSawTooth(Samps,XScanVolts_mV,XScanOffset_mV,ScanBuff);
 		for (frameCount = 0; frameCount < globalOptions->NumFramesPerVol; frameCount++)
 		{
 			
@@ -124,7 +124,7 @@ void ScanThreadLinear::InitializeSyncAndScan(void)
 				VolumeBuff[i+frameCount*Samps] = ScanBuff[i];
 		}
 
-		GenStairCase(Samps,globalOptions->NumFramesPerVol,YScanVolts,tempBuff);
+		GenStairCase(Samps,globalOptions->NumFramesPerVol,YScanVolts_mV, YScanOffset_mV, tempBuff);
 
 		for (int i = 0; i < Samps*globalOptions->NumFramesPerVol; i++)
 			VolumeBuff[i + Samps*globalOptions->NumFramesPerVol] = tempBuff[i];
@@ -173,18 +173,19 @@ void ScanThreadLinear::StopTasks(void)
 }
 
 
-int ScanThreadLinear::GenSawTooth(int numElements, double amplitude,  double sawTooth[])
+void ScanThreadLinear::GenSawTooth(int numElements, double amplitude,  double offset, double sawTooth[])
 {
-	float64 stepSize = amplitude/(numElements-NumPtsDw-__DEADTIMEPTS-1);
+	//All voltages are in millivolts. Dividing by 1000 converts millivolts to volts
+	double stepSize = amplitude/(numElements-NumPtsDw-__DEADTIMEPTS-1)/1000;
 
 	int i=0;
 	for(i; i<__DEADTIMEPTS; i++)
-		sawTooth[i] = (XScanOffset/1000 + amplitude/2);
+		sawTooth[i] = (offset/1000 + amplitude/2000);
 
 	for(i; i<numElements-NumPtsDw-__DEADTIMEPTS; i++)
-		sawTooth[i] = (XScanOffset/1000 + amplitude/2)- i*stepSize;
+		sawTooth[i] = (offset/1000 + amplitude/2000)- i*stepSize;
 	
-	float64 stepSize2 = amplitude/NumPtsDw;
+	double stepSize2 = amplitude/NumPtsDw/1000;
 	int c = 0;
 	for(i; i< (numElements - __DEADTIMEPTS); i++)
 	{
@@ -193,49 +194,22 @@ int ScanThreadLinear::GenSawTooth(int numElements, double amplitude,  double saw
 	}
 
 	for(i; i< (numElements); i++)
-		sawTooth[i] = XScanOffset/1000 + amplitude/2;
-
-	return 0;
+		sawTooth[i] = offset/1000 + amplitude/2000;
 }
 
-int ScanThreadLinear::GenSawToothY(int numElements, double amplitude,  double sawTooth[])
+
+
+void ScanThreadLinear::GenPulseTrain(int numElements, uInt8 digWave[])
 {
-	double stepSize = amplitude/(numElements-NumPtsDw-__DEADTIMEPTS-1);
-
-	int i=0;
-	for(i; i<__DEADTIMEPTS; i++)
-		sawTooth[i] = (YScanOffset/1000 + amplitude/2);
-
-	for(i; i<numElements-NumPtsDw-__DEADTIMEPTS; i++)
-		sawTooth[i] = (YScanOffset/1000 + amplitude/2)- i*stepSize;
-	
-	double stepSize2 = amplitude/NumPtsDw;
-	int c = 0;
-	for(i; i< (numElements - __DEADTIMEPTS); i++)
-	{
-		sawTooth[i] = sawTooth[numElements-NumPtsDw-__DEADTIMEPTS-1] + c*stepSize2;
-		c++;
-	}
-
-	for(i; i< (numElements); i++)
-		sawTooth[i] = YScanOffset/1000 + amplitude/2;
-
-	return 0;
-}
-
-int ScanThreadLinear::GenPulseTrain(int numElements, uInt8 digWave[])
-{
-	
 	for(int i =0;i<numElements/2;i++)
 		digWave[i] = (uInt8)(1);
 	for(int i =numElements/2;i<numElements;i++)
 		digWave[i] = (uInt8)(0);
 	for (int i=0; i<__PULSEDELAY;i++)
 		digWave[i] = (uInt8)(0);
-	return 0;
 }
 
-int ScanThreadLinear::GenStairCase(int numElementsPerStep, int numSteps,double amplitude, double stairCase[])
+void ScanThreadLinear::GenStairCase(int numElementsPerStep, int numSteps, double amplitude, double offset, double stairCase[])
 {
 	int stepdw = 3;
 	double stepsize = amplitude/1000/(numSteps-stepdw-1); 
@@ -243,14 +217,12 @@ int ScanThreadLinear::GenStairCase(int numElementsPerStep, int numSteps,double a
 	for (i = 0 ; i <numSteps-stepdw; i++)
 	{
 		for (int j = 0; j < numElementsPerStep; j++)
-			stairCase[i*numElementsPerStep + j] = (YScanOffset/1000 - amplitude/2000) +  (i)*stepsize;
+			stairCase[i*numElementsPerStep + j] = (offset/1000 - amplitude/2000) +  (i)*stepsize;
 	}
 
 	double stepsize_down = amplitude/1000/(numElementsPerStep*stepdw-1);
 	for (int j = 0; j < numElementsPerStep*stepdw; j++)
-		stairCase[i*numElementsPerStep+j] = (YScanOffset/1000 + amplitude/2000) -j*stepsize_down;
-
-	return 0;
+		stairCase[i*numElementsPerStep+j] = (offset/1000 + amplitude/2000) -j*stepsize_down;
 }
 
 
