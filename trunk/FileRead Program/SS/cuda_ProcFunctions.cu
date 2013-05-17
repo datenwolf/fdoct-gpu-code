@@ -39,9 +39,7 @@ policies, either expressed or implied.
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <cuda.h> //Include the general CUDA Header file
 #include <cufft.h> //This is to perform FFT using CUDA
-#include <cutil_inline.h> //This is to perform CUDA safecall functions
 #include <cuda_runtime.h>
 #include "cuda_ProcKernels.cu" 
 
@@ -83,12 +81,10 @@ cudaStream_t kernelStream;
 /*************************************************************************************************************************/
 void batchFFT(Complex *d_ComplexArray, cudaStream_t processStream)
 {
-	cufftSafeCall(
-		cufftExecC2C(fft_plan,
-					(cufftComplex *)d_ComplexArray,
-					(cufftComplex *)d_ComplexArray,
-					CUFFT_FORWARD)
-	);
+	cufftExecC2C(fft_plan,
+				(cufftComplex *)d_ComplexArray,
+				(cufftComplex *)d_ComplexArray,
+				CUFFT_FORWARD);
 }
 
 
@@ -99,16 +95,16 @@ void initProcCuda()
 {
 		cudaStreamCreate(&memcpyStream);
 		cudaStreamCreate(&kernelStream);
-		cutilSafeCall( cudaMalloc((void**)&dev_tempBuffer, bufferSize * sizeof(float)));
-		cutilSafeCall( cudaMalloc((void**)&dev_uShortBufferA, bufferSize * sizeof(unsigned short)));
-		cutilSafeCall( cudaMalloc((void**)&dev_uShortBufferB, bufferSize * sizeof(unsigned short)));
-		cutilSafeCall( cudaMalloc((void**)&dcArray, frameWidth * sizeof(float)));
+		cudaMalloc((void**)&dev_tempBuffer, bufferSize * sizeof(float));
+		cudaMalloc((void**)&dev_uShortBufferA, bufferSize * sizeof(unsigned short));
+		cudaMalloc((void**)&dev_uShortBufferB, bufferSize * sizeof(unsigned short));
+		cudaMalloc((void**)&dcArray, frameWidth * sizeof(float));
 		cudaMemset(dcArray, 0, frameWidth * sizeof(float));
-		cutilSafeCall( cudaMalloc((void**)&dev_FFTCompBuffer, bufferSize * fftLengthMult * sizeof(Complex)));
+		cudaMalloc((void**)&dev_FFTCompBuffer, bufferSize * fftLengthMult * sizeof(Complex));
 
 		//Be sure to have the fft_width size be dynamic
-		cufftSafeCall( cufftPlan1d( &fft_plan, fftLengthMult*frameWidth, CUFFT_C2C, frameHeight *  framesPerBuffer));
-		cufftSafeCall( cufftSetStream(fft_plan, kernelStream));
+		cufftPlan1d( &fft_plan, fftLengthMult*frameWidth, CUFFT_C2C, frameHeight *  framesPerBuffer);
+		cufftSetStream(fft_plan, kernelStream);
 }
 
 
@@ -142,12 +138,12 @@ extern "C" void initCudaProcVar(	int frameWid,
 extern "C" void cleanUpCUDABuffers()
 {
 	//Clean up all CUDA Buffers and arryays
-	cutilSafeCall(cudaFree(dcArray));
-	cutilSafeCall(cudaFree(dev_FFTCompBuffer));
-	cutilSafeCall(cudaFree(dev_tempBuffer));
+	cudaFree(dcArray);
+	cudaFree(dev_FFTCompBuffer);
+	cudaFree(dev_tempBuffer);
 
 	//Clean up FFT plans created
-	cufftSafeCall(cufftDestroy(fft_plan));
+	cufftDestroy(fft_plan);
 
 	//Clean up the streams created
 	cudaStreamDestroy(memcpyStream);
@@ -277,7 +273,7 @@ extern "C" void cudaPipeline(	unsigned short *h_buffer,
 	}
 
 	//Memcpy data into one buffer
-	cutilSafeCall( cudaMemcpyAsync((void *) memcpyBuffer, h_buffer, bufferSize*sizeof(unsigned short), cudaMemcpyHostToDevice, memcpyStream));
+	cudaMemcpyAsync((void *) memcpyBuffer, h_buffer, bufferSize*sizeof(unsigned short), cudaMemcpyHostToDevice, memcpyStream);
 	subDC_and_PadComplex(processBuffer, dev_FFTCompBuffer, dcArray, kernelStream);
 	batchFFT(dev_FFTCompBuffer, kernelStream);
 
