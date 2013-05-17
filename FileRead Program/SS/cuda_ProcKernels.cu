@@ -38,9 +38,7 @@ policies, either expressed or implied.
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <cuda.h> //Include the general CUDA Header file
 #include <cufft.h> //This is to perform FFT using CUDA
-#include <cutil_inline.h> //This is to perform CUDA safecall functions
 #include <cuda_runtime.h>
 
 typedef float2 Complex;

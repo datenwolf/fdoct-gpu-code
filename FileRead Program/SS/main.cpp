@@ -58,7 +58,7 @@ int main()
 	//Display pre-processed data currently does NOT work!!
 	bool processData = true;  //MUST be true
 	bool fundusRender = true; //Can be false or true
-	bool volumeRender = true; //Can be false or true
+	bool volumeRender = false; //Can be false or true
 	int fileLen;
 	int bufferLen;
 	int windowWidth = 1024;
@@ -76,7 +76,7 @@ int main()
 
 	//Define the filename to be used for file acquisition simulation
 	char *fileName = new char[100];
-	fileName = "H059-OS-Vol-1_256_nice";
+	fileName = "Test_Volume";
 
 	FILE *file = fopen(fileName, "rb");
 	if (file==NULL)
